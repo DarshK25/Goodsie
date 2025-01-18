@@ -13,7 +13,7 @@ const Navbar = () => {
     <Container maxW = {"1140px"} bg={useColorModeValue("gray.100", "gray.900")} > {/*bg = {useColorMode("gray.100, gray.900")}*/ }
       <Flex h = {16} alignItems = {"center"} justifyContent = {"space-between"}
        flexDir = {{
-        base: "column", /*base screen, column alignment*/
+        base: "row", /*base screen, column alignment*/
         sm: "row", /*small screen, row alignment*/
        }}
        >
@@ -24,7 +24,7 @@ const Navbar = () => {
             textAlign={"center"}
             bgGradient={"linear(to-r, cyan.400, blue.500)"}
             bgClip={"text"}
-            backgroundColor="gray.100" // Adds a light contrasting background
+            backgroundColor="gray.100"
             >
           <Link to="/">Product Store 🛒</Link>
         </Text>
