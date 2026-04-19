@@ -108,19 +108,6 @@ const ProductCard = ({ product }) => {
     >
       <Box position="relative">
         <Image src={product.image} alt={product.name} w={"100%"} h={"200px"} objectFit={"cover"} />
-        {isS3Image && (
-          <Badge
-            position="absolute"
-            top={2}
-            right={2}
-            colorScheme="orange"
-            fontSize="0.65em"
-            borderRadius="md"
-            px={2}
-          >
-            ☁ Amazon S3
-          </Badge>
-        )}
       </Box>
 
       <Box p={4}>
@@ -183,7 +170,7 @@ const ProductCard = ({ product }) => {
               {/* Replace image via file upload */}
               <FormControl>
                 <FormLabel fontSize="sm" color="gray.500">
-                  Replace image (optional — uploads to S3)
+                  Replace image (optional)
                 </FormLabel>
                 <Input
                   ref={fileInputRef}

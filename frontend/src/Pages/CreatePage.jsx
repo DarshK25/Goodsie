@@ -143,7 +143,7 @@ const CreatePage = () => {
             {/* ── S3 Image Upload ── */}
             <FormControl>
               <FormLabel fontSize="sm" color="gray.500">
-                Product Image (uploaded to Amazon S3)
+                Product Image
               </FormLabel>
               <Input
                 ref={fileInputRef}
@@ -165,7 +165,7 @@ const CreatePage = () => {
                   objectFit="cover"
                 />
                 <Text fontSize="xs" color="gray.400" p={1} textAlign="center">
-                  Preview — will be stored on Amazon S3
+                  Image Preview
                 </Text>
               </Box>
             )}
