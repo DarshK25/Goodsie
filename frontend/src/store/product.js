@@ -17,9 +17,10 @@ export const useProductStore = create((set) => ({
         body: formData,
       });
 
-      if (!res.ok) throw new Error("Failed to create product");
-
       const data = await res.json();
+      
+      if (!res.ok) throw new Error(data.message || "Failed to create product");
+
       set((state) => ({ products: [...state.products, data.data] }));
       return { success: true, message: "Product created successfully" };
     } catch (error) {
@@ -83,9 +84,10 @@ export const useProductStore = create((set) => ({
         body: formData,
       });
 
-      if (!res.ok) throw new Error("Failed to update product");
-
       const data = await res.json();
+      
+      if (!res.ok) throw new Error(data.message || "Failed to update product");
+
       if (!data.success) return { success: false, message: data.message };
 
       set((state) => ({
