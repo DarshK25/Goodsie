@@ -7,8 +7,12 @@ import {
   Input,
   Button,
   useToast,
+  FormControl,
+  FormLabel,
+  Image,
+  Text,
 } from "@chakra-ui/react";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { useProductStore } from "../store/product.js";
 
@@ -17,20 +21,30 @@ const CreatePage = () => {
     name: "",
     price: "",
     description: "",
-    image: "",
   });
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef(null);
+
   const toast = useToast();
   const { createProduct } = useProductStore();
 
-  // Handle adding a new product with input validation
-  const handleAddProduct = async () => {
-    const { name, price, description, image } = newProduct;
+  // Handle file selection and show a local preview
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
 
-    // Validate required fields
-    if (!name || !price || !description || !image) {
+  const handleAddProduct = async () => {
+    const { name, price, description } = newProduct;
+
+    if (!name || !price || !description || !imageFile) {
       toast({
         title: "Validation Error",
-        description: "All fields are required.",
+        description: "All fields including an image file are required.",
         status: "error",
         duration: 3000,
         isClosable: true,
@@ -38,17 +52,31 @@ const CreatePage = () => {
       return;
     }
 
-    const { success, message } = await createProduct(newProduct);
+    setUploading(true);
+
+    // Build FormData so multer-s3 can handle the file
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("price", price);
+    formData.append("description", description);
+    formData.append("image", imageFile);
+
+    const { success, message } = await createProduct(formData);
+    setUploading(false);
 
     if (success) {
       toast({
         title: "Product Added",
-        description: message,
+        description: "Product image uploaded to S3 and saved successfully!",
         status: "success",
         duration: 3000,
         isClosable: true,
       });
-      setNewProduct({ name: "", price: "", description: "", image: "" });
+      // Reset form
+      setNewProduct({ name: "", price: "", description: "" });
+      setImageFile(null);
+      setImagePreview(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
     } else {
       toast({
         title: "Error",
@@ -59,6 +87,8 @@ const CreatePage = () => {
       });
     }
   };
+
+  const formBg = useColorModeValue("white", "gray.800");
 
   return (
     <Container maxW={"container.sm"}>
@@ -82,15 +112,8 @@ const CreatePage = () => {
         </motion.div>
 
         {/* Form Container */}
-        <Box
-          w={"full"}
-          bg={useColorModeValue("white", "gray.800")}
-          p={6}
-          rounded={"lg"}
-          shadow={"md"}
-        >
+        <Box w={"full"} bg={formBg} p={6} rounded={"lg"} shadow={"md"}>
           <VStack spacing={4}>
-            {/* Input fields */}
             <Input
               placeholder="Product Name"
               name="name"
@@ -116,20 +139,44 @@ const CreatePage = () => {
                 setNewProduct({ ...newProduct, description: e.target.value })
               }
             />
-            <Input
-              placeholder="Image URL"
-              name="image"
-              value={newProduct.image}
-              onChange={(e) =>
-                setNewProduct({ ...newProduct, image: e.target.value })
-              }
-            />
 
-            {/* Submit button */}
+            {/* ── S3 Image Upload ── */}
+            <FormControl>
+              <FormLabel fontSize="sm" color="gray.500">
+                Product Image (uploaded to Amazon S3)
+              </FormLabel>
+              <Input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                p={1}
+              />
+            </FormControl>
+
+            {/* Live preview of selected image */}
+            {imagePreview && (
+              <Box w="full" borderRadius="md" overflow="hidden" border="1px solid" borderColor="gray.200">
+                <Image
+                  src={imagePreview}
+                  alt="Preview"
+                  w="100%"
+                  h="180px"
+                  objectFit="cover"
+                />
+                <Text fontSize="xs" color="gray.400" p={1} textAlign="center">
+                  Preview — will be stored on Amazon S3
+                </Text>
+              </Box>
+            )}
+
+            {/* Submit */}
             <Button
               colorScheme="blue"
               onClick={handleAddProduct}
               w="full"
+              isLoading={uploading}
+              loadingText="Uploading to S3..."
               _hover={{ bg: "blue.600" }}
             >
               Add New Product
